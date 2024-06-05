@@ -1,3 +1,5 @@
+// Inclusão de bibliotecas
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -6,8 +8,11 @@
 #include "led_strip.h"
 #include "light_driver.h"  
 
+
+
+// Definição das constantes e variaveis
 #define BUTTON_GPIO 0       // Definição do pino GPIO do botão
-#define LED_GPIO 2          // Defina o pino GPIO do LED da placa
+#define LED_GPIO 2          // Definição o pino GPIO do LED da placa
 #define NUM_LEDS 1          // Número de LEDs na strip 
 
 static led_strip_handle_t s_led_strip;
@@ -15,12 +20,14 @@ static QueueHandle_t gpio_evt_queue = NULL;
 static const char *TAG = "ESP_LIGHT_SWITCH";
 static uint8_t s_red = 255, s_green = 255, s_blue = 255;
 
+// interrupção do GPIO
 static void IRAM_ATTR gpio_isr_handler(void *arg)
 {
     uint32_t gpio_num = (uint32_t)arg;
     xQueueSendFromISR(gpio_evt_queue, &gpio_num, NULL);
 }
 
+// Função para configurar o estado do LED
 void light_driver_set_power(bool power)
 {
     ESP_ERROR_CHECK(led_strip_set_pixel(s_led_strip, 0, s_red * power, s_green * power, s_blue * power));
@@ -28,6 +35,7 @@ void light_driver_set_power(bool power)
     ESP_LOGI(TAG, "LED power set to %s", power ? "ON" : "OFF");
 }
 
+// iniciar o driver do LED
 void light_driver_init(bool power)
 {
     led_strip_config_t led_strip_conf = {
@@ -41,7 +49,7 @@ void light_driver_init(bool power)
     light_driver_set_power(power);
     ESP_LOGI(TAG, "LED strip initialized on GPIO %d", (int)LED_GPIO); 
 }
-
+// botão
 static void button_task(void *arg)
 {
     uint32_t io_num;
@@ -56,6 +64,8 @@ static void button_task(void *arg)
     }
 }
 
+
+//função principal
 void app_main(void)
 {
     gpio_config_t io_conf;
